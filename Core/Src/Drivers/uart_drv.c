@@ -78,16 +78,22 @@ void uart_reinit_up(void)
 
 void uart_send_up(const uint8_t *buf, uint16_t len)
 {
-    if (s_tx_busy_up)                              { return; }
     if (len == 0 || len > MAVLINK_MAX_PACKET_LEN)  { return; }
+
+    /* Atomically claim the TX slot — disable IRQ for the check+set pair
+       so SysTick cannot preempt between the check and the flag set. */
+    uint32_t primask = __get_PRIMASK();
+    __disable_irq();
+    uint8_t busy = s_tx_busy_up;
+    if (!busy) { s_tx_busy_up = 1; }
+    __set_PRIMASK(primask);
+
+    if (busy) { return; }
 
     memcpy(s_tx_buf_up, buf, len);
 
-    s_tx_busy_up = 1;
-    if (HAL_UART_Transmit_DMA(&huart1, s_tx_buf_up, len) != HAL_OK)
+    if (HAL_UART_Transmit_IT(&huart1, s_tx_buf_up, len) != HAL_OK)
     {
-        /* DMA not available — fall back to blocking TX and clear flag */
-        HAL_UART_Transmit(&huart1, s_tx_buf_up, len, 10);
         s_tx_busy_up = 0;
     }
 }
@@ -96,12 +102,18 @@ void uart_send_up(const uint8_t *buf, uint16_t len)
 
 void uart_send_down(const uint8_t *buf, uint16_t len)
 {
-    if (s_tx_busy_down)                            { return; }
     if (len == 0 || len > MAVLINK_MAX_PACKET_LEN)  { return; }
+
+    uint32_t primask = __get_PRIMASK();
+    __disable_irq();
+    uint8_t busy = s_tx_busy_down;
+    if (!busy) { s_tx_busy_down = 1; }
+    __set_PRIMASK(primask);
+
+    if (busy) { return; }
 
     memcpy(s_tx_buf_down, buf, len);
 
-    s_tx_busy_down = 1;
     if (HAL_UART_Transmit_DMA(&huart2, s_tx_buf_down, len) != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, s_tx_buf_down, len, 10);
@@ -117,13 +129,15 @@ void uart_rx_callback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-        comm_on_msg_up(s_rx_byte_up);
-        HAL_UART_Receive_IT(&huart1, &s_rx_byte_up, 1);
+        uint8_t byte = s_rx_byte_up;   /* snapshot before re-arming */
+        HAL_UART_Receive_IT(&huart1, &s_rx_byte_up, 1);   /* re-arm first */
+        comm_on_msg_up(byte);
     }
     else if (huart->Instance == USART2)
     {
-        comm_on_msg_down(s_rx_byte_down);
+        uint8_t byte = s_rx_byte_down;
         HAL_UART_Receive_IT(&huart2, &s_rx_byte_down, 1);
+        comm_on_msg_down(byte);
     }
 }
 

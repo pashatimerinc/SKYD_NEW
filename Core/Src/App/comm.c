@@ -63,9 +63,15 @@ static mavlink_message_t s_msg_down;
 static mavlink_status_t  s_status_up;
 static mavlink_status_t  s_status_down;
 
-/* Periodic tick counters */
-static uint16_t s_debug_timer  = 50;
-static uint16_t s_status_timer = 1000;
+/* Periodic tick counters — decremented in SysTick, acted on in main loop */
+static volatile uint16_t s_debug_timer     = 50;
+static volatile uint16_t s_status_timer    = 1000;
+static volatile uint16_t s_heartbeat_timer = 500;
+
+/* Pending send flags — set in SysTick, cleared in main loop */
+static volatile uint8_t s_send_heartbeat = 0;
+static volatile uint8_t s_send_status    = 0;
+static volatile uint8_t s_send_debug     = 0;
 
 /* ── Forward declarations ─────────────────────────────────────────────────── */
 
@@ -112,6 +118,7 @@ void comm_process_pending(StateMachineCtx *sm)
     /* Keep local bitmask in sync with state machine */
     comm_update_local_bit(sm);
 
+    /* Process inbound messages */
     if (s_msg_ready_up)
     {
         s_msg_ready_up = 0;
@@ -122,6 +129,30 @@ void comm_process_pending(StateMachineCtx *sm)
     {
         s_msg_ready_down = 0;
         handle_message_down(&s_msg_down, sm);
+    }
+
+    /* Drain periodic send flags — all actual UART sends happen here,
+       on the main loop, never from SysTick IRQ context. */
+    if (s_send_heartbeat)
+    {
+        s_send_heartbeat = 0;
+        comm_send_skynet(0.0f, (float)SKYNET_CMD_HELLO);
+        if (s_seq_num != 0xFF && s_seq_num > 1)
+        {
+            comm_send_skynet(0.0f, (float)SKYNET_CMD_STATUS);
+        }
+    }
+
+    if (s_send_status)
+    {
+        s_send_status = 0;
+        comm_send_status(s_bitmask);
+    }
+
+    if (s_send_debug)
+    {
+        s_send_debug = 0;
+        send_data_stream();
     }
 }
 
@@ -151,15 +182,10 @@ void comm_systick(StateMachineCtx *sm)
 
 void comm_heartbeat_tick(StateMachineCtx *sm)
 {
-    if (s_mode == NO_INPUT_MODE) { return; }
-
-    /* Announce our presence to the chain */
-    comm_send_skynet(0.0f, (float)SKYNET_CMD_HELLO);
-
-    /* Propagate our bitmask downstream (units 2+ only) */
-    if (s_seq_num != 0xFF && s_seq_num > 1)
+    /* Called from SysTick — only set flag, never send directly */
+    if (s_mode != NO_INPUT_MODE)
     {
-        comm_send_skynet(0.0f, (float)SKYNET_CMD_STATUS);
+        s_send_heartbeat = 1;
     }
 }
 
@@ -167,17 +193,14 @@ void comm_heartbeat_tick(StateMachineCtx *sm)
 
 void comm_debug_stream_tick(StateMachineCtx *sm)
 {
+    /* Called from SysTick — only set flag */
     if (sm_get_state(sm) != DEBUG_STATE) { return; }
 
-    if (s_debug_timer > 0)
-    {
-        s_debug_timer--;
-    }
-
+    if (s_debug_timer > 0) { s_debug_timer--; }
     if (s_debug_timer == 0)
     {
-        s_debug_timer = 50;
-        send_data_stream();
+        s_debug_timer    = 50;
+        s_send_debug     = 1;
     }
 }
 
@@ -185,19 +208,16 @@ void comm_debug_stream_tick(StateMachineCtx *sm)
 
 void comm_status_tick(StateMachineCtx *sm)
 {
-    if (s_mode != MAVLINK_MODE)              { return; }
-    if (sm_get_state(sm) == DEBUG_STATE)     { return; }
-    if (s_seq_num != 1)                      { return; }
+    /* Called from SysTick — only set flag */
+    if (s_mode != MAVLINK_MODE)          { return; }
+    if (sm_get_state(sm) == DEBUG_STATE) { return; }
+    if (s_seq_num != 1)                  { return; }
 
-    if (s_status_timer > 0)
-    {
-        s_status_timer--;
-    }
-
+    if (s_status_timer > 0) { s_status_timer--; }
     if (s_status_timer == 0)
     {
         s_status_timer = 1000;
-        comm_send_status(s_bitmask);
+        s_send_status  = 1;
     }
 }
 
