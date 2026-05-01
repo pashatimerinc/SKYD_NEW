@@ -1,0 +1,8 @@
+../Core/Src/app.c:47:6:app_init	8	static
+../Core/Src/app.c:73:6:app_update	8	static
+../Core/Src/app.c:100:6:HAL_SYSTICK_Callback	8	static
+../Core/Src/app.c:130:6:HAL_UART_RxCpltCallback	16	static
+../Core/Src/app.c:135:6:HAL_UART_TxCpltCallback	16	static
+../Core/Src/app.c:140:6:HAL_UART_ErrorCallback	16	static
+../Core/Src/app.c:147:6:HAL_TIM_IC_CaptureCallback	16	static
+../Core/Src/app.c:152:6:HAL_TIM_PeriodElapsedCallback	16	static

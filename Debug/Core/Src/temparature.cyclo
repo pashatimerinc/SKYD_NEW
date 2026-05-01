@@ -1,0 +1,7 @@
+../Core/Src/temparature.c:14:9:OneWire_SendAndReceive	1
+../Core/Src/temparature.c:22:9:OneWire_Reset	1
+../Core/Src/temparature.c:37:6:OneWire_WriteBit	2
+../Core/Src/temparature.c:43:9:OneWire_ReadBit	1
+../Core/Src/temparature.c:50:6:OneWire_WriteByte	2
+../Core/Src/temparature.c:58:9:OneWire_ReadByte	3
+../Core/Src/temparature.c:67:7:DS18B20_ReadTemp	2
