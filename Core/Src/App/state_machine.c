@@ -134,7 +134,7 @@ uint8_t sm_is_loaded(const StateMachineCtx *ctx)
  */
 static void state_boot(StateMachineCtx *ctx)
 {
-    /* input_proto_tick() runs in app_update() before us; check its result */
+
     if (input_proto_get_mode() == NO_INPUT_MODE) { return; }
 
     Switches sw = switches_get();
@@ -381,11 +381,31 @@ static void state_unloaded(StateMachineCtx *ctx)
 static void state_error(StateMachineCtx *ctx)
 {
     static uint32_t blink_ts = 0;
+    static uint8_t toggle = 0;
+    uint8_t seq = comm_get_sequential_number();
+
 
     if (HAL_GetTick() - blink_ts >= TIMEOUT_ERROR_BLINK_MS)
     {
         blink_ts = HAL_GetTick();
         HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+
+        if (toggle)
+        {
+        	update_bitmask_set(seq);
+        	toggle = !toggle;
+        }
+        else
+        {
+        	update_bitmask_clear(seq);
+        	toggle = !toggle;
+        }
+
+    }
+    if (switches_get().fixator)
+    {
+    	ctx->error = ERROR_OK;
+    	transition_to(ctx, CLIP_LOADING);
     }
 }
 
@@ -478,20 +498,25 @@ static void drop_sequence_update(StateMachineCtx *ctx, uint8_t loop_on_success)
             if (!sw.counter && counter_edge == 1)
             {
                 counter_edge = 2;
+                ctx->drop_ts = HAL_GetTick();
             }
 
-            if (counter_edge == 2)
+            if (sw.counter && counter_edge == 2)
             {
-                counter_edge = 0;
-                servo_pusher_set(SERVO_STOP);
+
 
                 if (loop_on_success)
                 {
+
+                	counter_edge = 0;
+                	ctx->drop_ts = HAL_GetTick();
                     /* DROP_ALL: cycle back to push the next one */
-                    ctx->substate = SS_PUSHER_ROLLBACK;
+//                    ctx->substate = SS_PUSHER_ROLLBACK;
                 }
                 else
                 {
+                	counter_edge = 0;
+					servo_pusher_set(SERVO_STOP);
                     /* DROP_ONE: done — go back to loaded */
                     transition_to(ctx, LOADED);
                 }

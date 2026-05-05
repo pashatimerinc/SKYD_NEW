@@ -6,20 +6,11 @@
   * USART1 = upstream  (to Flight Controller / GCS)
   * USART2 = downstream (to next unit in daisy-chain)
   *
-  * RX: interrupt-driven byte-at-a-time, forwarded to comm layer.
-  * TX: DMA with a busy flag — if a TX is in flight, new sends are dropped.
-  *
-  * Reset safety:
-  *   After a hard reset (NRST) the DMA controller retains state from before
-  *   the reset. Calling MX_USARTx_UART_Init() on a live DMA stream causes
-  *   HAL to silently fail or fire a spurious error IRQ on the first byte.
-  *   uart_safe_init() always aborts + deinits before reinitialising, which
-  *   guarantees a clean slate regardless of prior DMA state.
-  *
-  * Static TX buffers:
-  *   HAL DMA is asynchronous — the buffer must stay valid until
-  *   TxCpltCallback fires. Callers build frames on the stack, so
-  *   uart_send_* copies into a static buffer before handing off to DMA.
+  * Keep it simple — match exactly what the original working code did:
+  *   - Call MX_USARTx_UART_Init() directly, no DeInit dance
+  *   - Clear SR/DR to flush any latched error flags after init
+  *   - Arm RX interrupt
+  *   - Atomic busy flag check+set to prevent SysTick race
   ******************************************************************************
   */
 
@@ -28,7 +19,7 @@
 #include "usart.h"
 #include <string.h>
 
-/* ── TX buffer size ───────────────────────────────────────────────────────── */
+/* ── Config ───────────────────────────────────────────────────────────────── */
 
 #ifndef MAVLINK_MAX_PACKET_LEN
 #define MAVLINK_MAX_PACKET_LEN  280u
@@ -47,41 +38,44 @@ static uint8_t s_tx_buf_down[MAVLINK_MAX_PACKET_LEN];
 
 /* ── Forward declarations ─────────────────────────────────────────────────── */
 
-static void uart_safe_init(UART_HandleTypeDef *huart,
-                            void (*mx_init)(void),
-                            uint8_t *rx_byte);
+static void clear_error_flags(UART_HandleTypeDef *huart);
 
 /* ── uart_init ────────────────────────────────────────────────────────────── */
 
 void uart_init(void)
 {
-    uart_safe_init(&huart2, MX_USART2_UART_Init, &s_rx_byte_down);
-    uart_safe_init(&huart1, MX_USART1_UART_Init, &s_rx_byte_up);
-    s_tx_busy_up   = 0;
+    /* USART2 downstream — always on */
+    MX_USART2_UART_Init();
+    clear_error_flags(&huart2);
     s_tx_busy_down = 0;
+    HAL_UART_Receive_IT(&huart2, &s_rx_byte_down, 1);
+
+    /* USART1 upstream */
+    uart_reinit_up();
 }
 
 /* ── uart_reinit_up ───────────────────────────────────────────────────────── */
 /*
- * Called by input_proto when switching back from PWM capture to UART.
- * Must abort DMA and fully deinit before reinitialising — TIM4 may have
- * left the pin in an output state that causes a framing error on the
- * first received byte.
+ * Called at startup and by input_proto when switching back from PWM capture.
+ * Matches exactly what the original START_UP() did — just call the CubeMX
+ * init function, clear flags, arm RX. No DeInit needed on a bare-metal system
+ * where we control the full boot sequence.
  */
 void uart_reinit_up(void)
 {
-    uart_safe_init(&huart1, MX_USART1_UART_Init, &s_rx_byte_up);
+    MX_USART1_UART_Init();
+    clear_error_flags(&huart1);
     s_tx_busy_up = 0;
+    HAL_UART_Receive_IT(&huart1, &s_rx_byte_up, 1);
 }
 
 /* ── uart_send_up ─────────────────────────────────────────────────────────── */
 
 void uart_send_up(const uint8_t *buf, uint16_t len)
 {
-    if (len == 0 || len > MAVLINK_MAX_PACKET_LEN)  { return; }
+    if (len == 0 || len > MAVLINK_MAX_PACKET_LEN) { return; }
 
-    /* Atomically claim the TX slot — disable IRQ for the check+set pair
-       so SysTick cannot preempt between the check and the flag set. */
+    /* Atomic check+set — prevents race between main loop and SysTick */
     uint32_t primask = __get_PRIMASK();
     __disable_irq();
     uint8_t busy = s_tx_busy_up;
@@ -102,7 +96,7 @@ void uart_send_up(const uint8_t *buf, uint16_t len)
 
 void uart_send_down(const uint8_t *buf, uint16_t len)
 {
-    if (len == 0 || len > MAVLINK_MAX_PACKET_LEN)  { return; }
+    if (len == 0 || len > MAVLINK_MAX_PACKET_LEN) { return; }
 
     uint32_t primask = __get_PRIMASK();
     __disable_irq();
@@ -129,7 +123,7 @@ void uart_rx_callback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-        uint8_t byte = s_rx_byte_up;   /* snapshot before re-arming */
+        uint8_t byte = s_rx_byte_up;
         HAL_UART_Receive_IT(&huart1, &s_rx_byte_up, 1);   /* re-arm first */
         comm_on_msg_up(byte);
     }
@@ -149,12 +143,8 @@ void uart_tx_callback(UART_HandleTypeDef *huart)
 
 void uart_error_callback(UART_HandleTypeDef *huart)
 {
-    /* Clear all error flags */
-    if (huart->ErrorCode & HAL_UART_ERROR_ORE) { __HAL_UART_CLEAR_OREFLAG(huart); }
-    if (huart->ErrorCode & HAL_UART_ERROR_FE)  { __HAL_UART_CLEAR_FEFLAG(huart);  }
-    if (huart->ErrorCode & HAL_UART_ERROR_NE)  { __HAL_UART_CLEAR_NEFLAG(huart);  }
+    clear_error_flags(huart);
 
-    /* Reset TX busy so the channel can recover */
     if (huart->Instance == USART1)
     {
         s_tx_busy_up = 0;
@@ -167,71 +157,16 @@ void uart_error_callback(UART_HandleTypeDef *huart)
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Private helpers
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Private helpers ──────────────────────────────────────────────────────── */
 
-/**
-  * @brief  Safely (re)initialise a UART peripheral.
-  *
-  *   1. Abort any in-flight DMA TX/RX — stops the DMA stream and clears
-  *      the HAL handle state so the next init starts clean.
-  *   2. DeInit the peripheral — resets CR1/CR2/CR3 and disables IRQ.
-  *   3. Call the CubeMX-generated init function.
-  *   4. Clear any stale error/status flags that may have been latched
-  *      during reset (framing error, noise, overrun).
-  *   5. Re-arm the RX interrupt.
-  */
-static void uart_safe_init(UART_HandleTypeDef *huart,
-                            void (*mx_init)(void),
-                            uint8_t *rx_byte)
+/*
+ * On STM32F1, reading SR then DR clears RXNE, ORE, FE, NE in one sequence.
+ * Call after every init to flush any flags latched during reset or pin float.
+ */
+static void clear_error_flags(UART_HandleTypeDef *huart)
 {
-    /* Step 1 — force UART handle to a known state before anything else.
-       After a hard reset RAM retains pre-reset values. huart->gState may
-       say BUSY which causes HAL_UART_DeInit to bail early, leaving the
-       handle broken. Setting gState = READY first lets DeInit run fully. */
-    huart->gState    = HAL_UART_STATE_READY;
-    huart->RxState   = HAL_UART_STATE_READY;
-
-    /* Step 2 — reset the DMA handle states the same way.
-       hdmatx/hdmarx are linked by mx_init so they may be valid pointers
-       from before the reset. If their State says BUSY, HAL_DMA_Init (called
-       inside mx_init) will skip reinitialisation entirely.
-       We reset State directly — safer than calling HAL_DMA_DeInit on a
-       potentially stale handle whose Instance pointer we can't trust. */
-    if (huart->hdmatx != NULL) { huart->hdmatx->State = HAL_DMA_STATE_RESET; }
-    if (huart->hdmarx != NULL) { huart->hdmarx->State = HAL_DMA_STATE_RESET; }
-
-    /* Step 3 — full peripheral deinit — now safe because gState is READY */
-    HAL_UART_DeInit(huart);
-
-    /* Step 4 — reinitialise via CubeMX config (links and inits DMA handles) */
-    mx_init();
-
-    /* Step 5 — clear any flags latched during or before reset.
-       Reading SR then DR is the STM32F1 prescribed sequence to clear
-       RXNE, ORE, FE, NE in one go. */
     volatile uint32_t dummy;
     dummy = huart->Instance->SR;
     dummy = huart->Instance->DR;
     (void)dummy;
-
-    /* Step 6 — ensure DMA TX interrupt is enabled in NVIC.
-       CubeMX only enables DMA channel IRQs it knows about. If USART1 TX
-       DMA was not explicitly configured in the .ioc, DMA1_Channel4_IRQn
-       may not be enabled, so TxCpltCallback never fires.
-       Enabling it here is safe — it's a no-op if already enabled. */
-    if (huart->Instance == USART1)
-    {
-        HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-    }
-    else if (huart->Instance == USART2)
-    {
-        HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
-    }
-
-    /* Step 7 — arm RX interrupt */
-    HAL_UART_Receive_IT(huart, rx_byte, 1);
 }

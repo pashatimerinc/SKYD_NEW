@@ -1,8 +1,8 @@
 ../Core/Src/app.c:47:6:app_init	1
 ../Core/Src/app.c:73:6:app_update	4
-../Core/Src/app.c:100:6:HAL_SYSTICK_Callback	2
-../Core/Src/app.c:130:6:HAL_UART_RxCpltCallback	1
-../Core/Src/app.c:135:6:HAL_UART_TxCpltCallback	1
-../Core/Src/app.c:140:6:HAL_UART_ErrorCallback	1
-../Core/Src/app.c:147:6:HAL_TIM_IC_CaptureCallback	1
-../Core/Src/app.c:152:6:HAL_TIM_PeriodElapsedCallback	1
+../Core/Src/app.c:101:6:HAL_SYSTICK_Callback	2
+../Core/Src/app.c:131:6:HAL_UART_RxCpltCallback	1
+../Core/Src/app.c:136:6:HAL_UART_TxCpltCallback	1
+../Core/Src/app.c:141:6:HAL_UART_ErrorCallback	1
+../Core/Src/app.c:148:6:HAL_TIM_IC_CaptureCallback	1
+../Core/Src/app.c:153:6:HAL_TIM_PeriodElapsedCallback	1

@@ -92,8 +92,7 @@ static void send_debug_ack_do(uint8_t cmd_id);
 static void send_debug_ack_set(uint8_t param_id, float data);
 static void send_data_stream(void);
 
-static void update_bitmask_set(uint8_t bit);
-static void update_bitmask_clear(uint8_t bit);
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Public API
@@ -204,7 +203,7 @@ void comm_debug_stream_tick(StateMachineCtx *sm)
     }
 }
 
-/* ── comm_status_tick (every 1 ms, self-throttled to 1000 ms) ────────────── */
+/* ── comm_status_tick (every 1 ms, self-throttled to 500 ms) ────────────── */
 
 void comm_status_tick(StateMachineCtx *sm)
 {
@@ -216,7 +215,7 @@ void comm_status_tick(StateMachineCtx *sm)
     if (s_status_timer > 0) { s_status_timer--; }
     if (s_status_timer == 0)
     {
-        s_status_timer = 1000;
+    	s_status_timer = 500;
         s_send_status  = 1;
     }
 }
@@ -255,6 +254,7 @@ uint32_t         comm_get_bitmask(void)          { return s_bitmask;   }
 
 void comm_update_local_bit(const StateMachineCtx *sm)
 {
+	if (sm->error)         { return; }
     if (s_seq_num == 0xFF) { return; }
 
     if (sm_is_loaded(sm))
@@ -277,7 +277,7 @@ void comm_send_status(uint32_t bitmask)
         0,
         0, 0,
         (float)bitmask,
-        (float)(MAJOR * 10000 + MINOR * 100 + PATCH),
+        (float)(MAJOR * 0.1 + MINOR * 0.001 + PATCH * 0.00001),
         voltage_drv_get(),
         (float)s_seq_num,
         0
@@ -377,6 +377,7 @@ static void handle_heartbeat(mavlink_message_t *msg)
     if (hb.autopilot && s_mode == NO_INPUT_MODE)
     {
         set_mode_and_seq(MAVLINK_MODE, 1);
+        verify_command_mode();
     }
 }
 
@@ -393,6 +394,7 @@ static void handle_skynet(mavlink_message_t *msg, StateMachineCtx *sm)
         if (s_mode == NO_INPUT_MODE || s_seq_num == 0xFF)
         {
             set_mode_and_seq(MAVLINK_MODE, (uint8_t)sk.sequential_num + 1);
+            verify_command_mode();
         }
         return;
     }
@@ -412,7 +414,8 @@ static void handle_skynet(mavlink_message_t *msg, StateMachineCtx *sm)
             __enable_irq();
         }
 
-        comm_send_status(s_bitmask);
+//        if (s_seq_num != 0 && s_seq_num < 0xFF) comm_send_status(s_bitmask);
+
         return;
     }
 
@@ -446,7 +449,7 @@ static void handle_command_long(mavlink_message_t *msg, StateMachineCtx *sm)
     if (cmd.command != MAV_CMD_DO_GRIPPER) { return; }
 
     /* Always send status back upstream */
-    comm_send_status(s_bitmask);
+//    comm_send_status(s_bitmask);
 
     /* Must be addressed to our component */
     if (cmd.target_component != 169) { return; }
@@ -646,14 +649,14 @@ static void set_mode_and_seq(InputCommandMode mode, uint8_t seq)
     s_seq_num = seq;
 }
 
-static void update_bitmask_set(uint8_t seq)
+void update_bitmask_set(uint8_t seq)
 {
     __disable_irq();
     s_bitmask |= (0x10u >> seq);
     __enable_irq();
 }
 
-static void update_bitmask_clear(uint8_t seq)
+void update_bitmask_clear(uint8_t seq)
 {
     __disable_irq();
     s_bitmask &= ~(0x10u >> seq);

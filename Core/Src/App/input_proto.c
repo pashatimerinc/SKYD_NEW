@@ -55,7 +55,7 @@ void input_proto_tick(void)
 
         /* ── Wait for PWM lock (210 ms) ── */
         case PHASE_WAIT_PWM:
-            if (comm_get_mode() == PWM_MODE) { return; }
+            if (comm_get_mode() != PWM_MODE) { return; }
 
             if (now - s_ts > PWM_DETECT_WINDOW_MS)
             {
@@ -78,6 +78,20 @@ void input_proto_tick(void)
             }
             break;
     }
+}
+
+void verify_command_mode(void){
+	InputCommandMode cmd_mode = comm_get_mode();
+	switch(cmd_mode)
+	{
+		case MAVLINK_MODE:
+			pwm_drv_deinit();
+			uart_reinit_up();
+			break;
+		case PWM_MODE:
+			pwm_drv_init();
+			break;
+	}
 }
 
 InputCommandMode input_proto_get_mode(void)

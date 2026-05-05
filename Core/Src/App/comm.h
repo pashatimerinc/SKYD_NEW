@@ -126,6 +126,9 @@ uint32_t comm_get_bitmask(void);
   */
 void comm_update_local_bit(const StateMachineCtx *sm);
 
+void update_bitmask_set(uint8_t bit);
+void update_bitmask_clear(uint8_t bit);
+
 /* ── Send helpers (also used by debug command handlers) ──────────────────── */
 
 void comm_send_status(uint32_t bitmask);

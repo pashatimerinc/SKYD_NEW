@@ -116,6 +116,7 @@ static void handle_pulse(float pulse_us)
             if (s_detect_count >= PWM_DETECT_COUNT)
             {
                 comm_set_pwm_mode();
+                verify_command_mode();
             }
         }
         else

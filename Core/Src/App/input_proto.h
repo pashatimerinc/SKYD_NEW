@@ -21,6 +21,12 @@
 void input_proto_tick(void);
 
 /**
+  * @brief  Ensures ports where configured correctly.
+  * 		Fixing problem of detection of command_mode and deinitialization of uart.
+  */
+void verify_command_mode(void);
+
+/**
   * @brief  Convenience wrapper — returns comm_get_mode().
   *         Avoids callers depending on comm.h just for mode checks.
   */

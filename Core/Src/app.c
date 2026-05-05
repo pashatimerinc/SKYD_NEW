@@ -72,6 +72,7 @@ void app_init(void)
 
 void app_update(void)
 {
+
     /* 1. Resolve input protocol (PWM vs MAVLink) — no-op once locked */
     input_proto_tick();
 
