@@ -277,7 +277,7 @@ void comm_send_status(uint32_t bitmask)
         0,
         0, 0,
         (float)bitmask,
-        (float)(MAJOR * 0.1 + MINOR * 0.001 + PATCH * 0.00001),
+        (float)(MAJOR * 10000 + MINOR * 100 + PATCH),
         voltage_drv_get(),
         (float)s_seq_num,
         0
