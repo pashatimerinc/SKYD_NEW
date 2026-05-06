@@ -55,7 +55,7 @@ void input_proto_tick(void)
 
         /* ── Wait for PWM lock (210 ms) ── */
         case PHASE_WAIT_PWM:
-            if (comm_get_mode() != PWM_MODE) { return; }
+            if (comm_get_mode() == PWM_MODE) { return; }
 
             if (now - s_ts > PWM_DETECT_WINDOW_MS)
             {

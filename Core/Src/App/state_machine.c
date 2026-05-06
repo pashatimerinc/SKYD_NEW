@@ -120,7 +120,9 @@ ErrorDevice sm_get_error(const StateMachineCtx *ctx)  { return ctx->error;   }
 
 uint8_t sm_is_loaded(const StateMachineCtx *ctx)
 {
-    return (ctx->current == LOADED) ? 1u : 0u;
+    return (ctx->current == LOADED   ||
+    		ctx->current == DROP_ONE ||
+			ctx->current == DROP_ALL) ? 1u : 0u;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -406,6 +408,7 @@ static void state_error(StateMachineCtx *ctx)
     {
     	ctx->error = ERROR_OK;
     	transition_to(ctx, CLIP_LOADING);
+    	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_GPIO_Port, GPIO_PIN_RESET);
     }
 }
 

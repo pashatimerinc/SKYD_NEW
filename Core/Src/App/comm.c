@@ -461,18 +461,20 @@ static void handle_command_long(mavlink_message_t *msg, StateMachineCtx *sm)
     }
 
     uint8_t target = (uint8_t)cmd.param1;
+    uint32_t target_bitmask = (uint32_t)cmd.param4;
+    uint32_t compare_mask = 0b10000 >> s_seq_num;
 
-    if (target == s_seq_num)
+    for (int i = 4; i > 1; i--) {
+    	if (target_bitmask & 0b10000 >> i) comm_send_skynet(i, DROP_ONE);
+    }
+
+    if (target_bitmask & compare_mask)
     {
         /* Addressed to us */
         apply_drop_command(sm, s_seq_num, DROP_ONE);
+
     }
-    else if (target > s_seq_num)
-    {
-        /* Addressed to a unit further down the chain */
-        comm_send_skynet((float)target, (float)DROP_ONE);
-    }
-    else if (target == 0)
+    else if (target_bitmask == 0)
     {
         /* Broadcast drop-all */
         SystemState state = sm_get_state(sm);
