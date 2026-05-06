@@ -463,15 +463,17 @@ static void handle_command_long(mavlink_message_t *msg, StateMachineCtx *sm)
     uint8_t target = (uint8_t)cmd.param1;
     uint32_t target_bitmask = (uint32_t)cmd.param4;
     uint32_t compare_mask = 0b10000 >> s_seq_num;
+    /* check if we recieve from our plugin or vampires*/
+    float universal_command = cmd.param2 ? cmd.param2 : DROP_ONE;
 
     for (int i = 4; i > 1; i--) {
-    	if (target_bitmask & 0b10000 >> i) comm_send_skynet(i, DROP_ONE);
+    	if (target_bitmask & 0b10000 >> i) comm_send_skynet(i, cmd.param2);
     }
 
     if (target_bitmask & compare_mask)
     {
         /* Addressed to us */
-        apply_drop_command(sm, s_seq_num, DROP_ONE);
+        apply_drop_command(sm, s_seq_num, cmd.param2);
 
     }
     else if (target_bitmask == 0)
@@ -480,11 +482,11 @@ static void handle_command_long(mavlink_message_t *msg, StateMachineCtx *sm)
         SystemState state = sm_get_state(sm);
         if (state == LOADED)
         {
-            sm_request_transition(sm, DROP_ALL);
+            sm_request_transition(sm, cmd.param2);
         }
         else if (state == UNLOADED || state == ERROR_STATE)
         {
-            comm_send_skynet((float)(s_seq_num + 1), (float)DROP_ALL);
+            comm_send_skynet((float)(s_seq_num + 1), cmd.param2);
         }
     }
 }
