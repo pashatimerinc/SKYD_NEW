@@ -61,4 +61,7 @@ uint8_t thermo_is_valid(void);
   */
 float thermo_get_celsius(void);
 
+uint8_t get_isTicked(void);
+void clear_isTicked(void);
+
 #endif /* THERMO_DRV_H */

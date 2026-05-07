@@ -64,6 +64,8 @@ void app_init(void)
     voltage_init();
     voltage_configure_power_rail();
 
+    heater_init();
+
     /* 6. Seed the state machine */
     sm_init(&g_sm);
 }
@@ -83,10 +85,9 @@ void app_update(void)
     thermo_tick();
 
     /* 4. Temperature-based heater control */
-    if (thermo_is_valid() &&
-        (sm_get_state(&g_sm) == LOADED || sm_get_state(&g_sm) == DEBUG_STATE))
+    if (thermo_is_valid())
     {
-        heater_update(thermo_get_celsius());
+        heater_update(thermo_get_celsius(), &g_sm);
     }
 
     /* 5. Advance the main state machine */

@@ -13,6 +13,7 @@
   */
 
 #include <stdint.h>
+#include "../App/state_machine.h"
 
 /**
   * @brief  Initialise heater PWM output. Loads reverse flag from config.
@@ -23,7 +24,7 @@ void heater_init(void);
   * @brief  Update heater PWM based on current temperature.
   *         Call from main loop when thermo_is_valid() is true.
   */
-void heater_update(float temp_c);
+void heater_update(float temp_c, StateMachineCtx *ctx);
 
 /**
   * @brief  Set reverse flag (1 = inverted PWM polarity).

@@ -57,8 +57,13 @@ void servo_stoper_set(ServoCommand cmd)
 
     uint32_t compare = cmd;
 
+    if (cmd == SERVO_OPEN)
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, s_stoper_open);
+	else if (cmd == SERVO_CLOSE)
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, s_stoper_close);
 
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, compare);
+
+//    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, compare);
     s_stoper_cmd = cmd;
 }
 

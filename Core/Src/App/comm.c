@@ -377,7 +377,6 @@ static void handle_heartbeat(mavlink_message_t *msg)
     if (hb.autopilot && s_mode == NO_INPUT_MODE)
     {
         set_mode_and_seq(MAVLINK_MODE, 1);
-        verify_command_mode();
     }
 }
 
@@ -394,7 +393,6 @@ static void handle_skynet(mavlink_message_t *msg, StateMachineCtx *sm)
         if (s_mode == NO_INPUT_MODE || s_seq_num == 0xFF)
         {
             set_mode_and_seq(MAVLINK_MODE, (uint8_t)sk.sequential_num + 1);
-            verify_command_mode();
         }
         return;
     }
@@ -448,32 +446,31 @@ static void handle_command_long(mavlink_message_t *msg, StateMachineCtx *sm)
 
     if (cmd.command != MAV_CMD_DO_GRIPPER) { return; }
 
-    /* Always send status back upstream */
-//    comm_send_status(s_bitmask);
-
     /* Must be addressed to our component */
     if (cmd.target_component != 169) { return; }
 
-    /* Assign sequential number from param6 if not yet set */
-    if (s_seq_num == 0xFF)
-    {
-        s_seq_num = (uint8_t)cmd.param6 + 1;
-    }
+//    /* Assign sequential number from param6 if not yet set */
+//    if (s_seq_num == 0xFF)
+//    {
+//        s_seq_num = (uint8_t)cmd.param6 + 1;
+//    }
 
     uint8_t target = (uint8_t)cmd.param1;
     uint32_t target_bitmask = (uint32_t)cmd.param4;
     uint32_t compare_mask = 0b10000 >> s_seq_num;
     /* check if we recieve from our plugin or vampires*/
-    float universal_command = cmd.param2 ? cmd.param2 : DROP_ONE;
+    uint8_t isVampire = (cmd.param2) ? 0u: 1u;
 
     for (int i = 4; i > 1; i--) {
-    	if (target_bitmask & 0b10000 >> i) comm_send_skynet(i, cmd.param2);
+    	if (target_bitmask & 0b10000 >> i && !isVampire) comm_send_skynet(i, cmd.param2);
+    	if (target_bitmask & 0b10000 >> i && isVampire) comm_send_skynet(i, DROP_ONE);
     }
 
     if (target_bitmask & compare_mask)
     {
         /* Addressed to us */
-        apply_drop_command(sm, s_seq_num, cmd.param2);
+        if (!isVampire) apply_drop_command(sm, s_seq_num, cmd.param2);
+        else apply_drop_command(sm, s_seq_num, DROP_ONE);
 
     }
     else if (target_bitmask == 0)
@@ -482,11 +479,13 @@ static void handle_command_long(mavlink_message_t *msg, StateMachineCtx *sm)
         SystemState state = sm_get_state(sm);
         if (state == LOADED)
         {
-            sm_request_transition(sm, cmd.param2);
+        	if (!isVampire) apply_drop_command(sm, s_seq_num, cmd.param2);
+			else apply_drop_command(sm, s_seq_num, DROP_ALL);
         }
         else if (state == UNLOADED || state == ERROR_STATE)
         {
-            comm_send_skynet((float)(s_seq_num + 1), cmd.param2);
+        	if (!isVampire) comm_send_skynet((float)(s_seq_num + 1), cmd.param2);
+        	else comm_send_skynet((float)(s_seq_num + 1), DROP_ALL);
         }
     }
 }
@@ -651,6 +650,7 @@ static void set_mode_and_seq(InputCommandMode mode, uint8_t seq)
 {
     s_mode    = mode;
     s_seq_num = seq;
+    verify_command_mode();
 }
 
 void update_bitmask_set(uint8_t seq)

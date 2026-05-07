@@ -48,6 +48,7 @@ static DsState    s_state       = DS_IDLE;
 static uint32_t   s_ts          = 0;
 static int16_t    s_temp_x100   = -10000;   /* invalid sentinel */
 static uint32_t   s_last_start  = 0;
+static uint8_t isTicked = 0;
 
 /* ── Forward declarations ─────────────────────────────────────────────────── */
 
@@ -146,6 +147,7 @@ void thermo_tick(void)
                     s_temp_x100 = raw;
                 }
                 s_state = DS_IDLE;
+                isTicked = 1;
             }
             break;
 
@@ -191,4 +193,15 @@ float thermo_get_celsius(void)
 static void ds18_tim_cb(TIM_HandleTypeDef *htim)
 {
     ow_callback(&s_ds18.ow);
+}
+
+
+uint8_t get_isTicked(void)
+{
+	return isTicked;
+}
+
+void clear_isTicked(void)
+{
+	isTicked = 0;
 }

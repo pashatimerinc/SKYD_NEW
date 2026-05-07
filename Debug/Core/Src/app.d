@@ -30,11 +30,12 @@ Core/Src/app.o: ../Core/Src/app.c ../Core/Inc/app.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Core/Src/Drivers/voltage_drv.h ../Core/Src/Drivers/servo_drv.h \
  ../Core/Src/Drivers/switches_drv.h ../Core/Src/Drivers/thermo_drv.h \
- ../Core/Src/Drivers/heater_drv.h ../Core/Src/Drivers/uart_drv.h \
- ../Core/Src/Drivers/pwm_drv.h ../Core/Src/App/config.h \
- ../Core/Src/App/comm.h ../Core/Src/App/../App/state_machine.h \
- ../Core/Src/App/input_proto.h ../Core/Src/App/../App/comm.h \
- ../Core/Src/App/state_machine.h
+ ../Core/Src/Drivers/heater_drv.h \
+ ../Core/Src/Drivers/../App/state_machine.h \
+ ../Core/Src/Drivers/uart_drv.h ../Core/Src/Drivers/pwm_drv.h \
+ ../Core/Src/App/config.h ../Core/Src/App/comm.h \
+ ../Core/Src/App/../App/state_machine.h ../Core/Src/App/input_proto.h \
+ ../Core/Src/App/../App/comm.h ../Core/Src/App/state_machine.h
 ../Core/Inc/app.h:
 ../Core/Src/Drivers/flash_drv.h:
 ../Core/Inc/main.h:
@@ -71,6 +72,7 @@ Core/Src/app.o: ../Core/Src/app.c ../Core/Inc/app.h \
 ../Core/Src/Drivers/switches_drv.h:
 ../Core/Src/Drivers/thermo_drv.h:
 ../Core/Src/Drivers/heater_drv.h:
+../Core/Src/Drivers/../App/state_machine.h:
 ../Core/Src/Drivers/uart_drv.h:
 ../Core/Src/Drivers/pwm_drv.h:
 ../Core/Src/App/config.h:
