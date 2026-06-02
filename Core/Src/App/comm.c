@@ -348,6 +348,7 @@ static void handle_message_up(mavlink_message_t *msg, StateMachineCtx *sm)
 {
     switch (msg->msgid)
     {
+
         case MAVLINK_MSG_ID_HEARTBEAT:      handle_heartbeat(msg);          break;
         case MAVLINK_MSG_ID_SKYNET:         handle_skynet(msg, sm);         break;
         case MAVLINK_MSG_ID_COMMAND_LONG:   handle_command_long(msg, sm);   break;
@@ -537,6 +538,11 @@ static void handle_debug_set(mavlink_message_t *msg)
             config_save();
             break;
 
+        case READ_DATA:
+        	config_load();
+        	servo_stoper_update_trim(cfg.min_stopper, cfg.max_stopper);
+        	break;
+
         default:
             break;
     }
@@ -553,23 +559,32 @@ static void handle_debug_do(mavlink_message_t *msg, StateMachineCtx *sm)
 
     switch (dbg.command_id)
     {
-        case STOPER_OPEN:       servo_stoper_set(SERVO_OPEN);           break;
-        case STOPER_CLOSE:      servo_stoper_set(SERVO_CLOSE);          break;
-        case PUSHER_HOME:       servo_pusher_set(SERVO_HOME);           break;
-        case PUSHER_STOP:       servo_pusher_set(SERVO_STOP);           break;
-        case PUSHER_TO_FINISH:  servo_pusher_set(SERVO_DROP);           break;
-        case PUSHER_DROP:       sm_request_transition(sm, DROP_ONE);    break;
-        case EMERGENCY_STOP:    /* TODO: define emergency behaviour */   break;
+        case STOPER_OPEN:       	servo_stoper_set(SERVO_OPEN);           break;
+        case STOPER_CLOSE:      	servo_stoper_set(SERVO_CLOSE);          break;
+        case PUSHER_HOME:       	servo_pusher_set(SERVO_HOME);           break;
+        case PUSHER_STOP:       	servo_pusher_set(SERVO_STOP);           break;
+        case PUSHER_TO_FINISH:  	servo_pusher_set(SERVO_DROP);           break;
+        case PUSHER_DROP:       	sm_request_transition(sm, DROP_ONE);    break;
+        case EMERGENCY_STOP:    /* TODO: define emergency behaviour */  	break;
         case RESTART_SERVOS:
-            servo_stoper_set(SERVO_CLOSE);
+            servo_stoper_set(SERVO_STOP);
             servo_pusher_set(SERVO_STOP);
             break;
-        case START_HEAT:    heater_debug_set(1);    break;
-        case END_HEAT:      heater_debug_set(0);    break;
-        default:            break;
+        case START_HEAT:    		heater_debug_set(1);    				break;
+        case END_HEAT:      		heater_debug_set(0);    				break;
+        case JUMP_TO_BOOTLOADER:	send_debug_ack_do(dbg.command_id);
+        							HAL_Delay(100);
+        							request_bootloader();					break;
+        case RESTART_CONTROLLER:	send_debug_ack_do(dbg.command_id);
+        							HAL_Delay(100);
+        							restart_controller();					break;
+        default:            												break;
     }
 
     send_debug_ack_do(dbg.command_id);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

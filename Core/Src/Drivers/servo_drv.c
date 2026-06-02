@@ -43,9 +43,14 @@ void servo_pusher_set(ServoCommand cmd)
 {
     if (s_pusher_cmd == cmd) { return; }
 
-    uint32_t compare = cmd;
 
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, compare);
+    if (cmd == SERVO_HOME)
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 1000);
+	else if (cmd == SERVO_DROP)
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 2000);
+	else if (cmd == SERVO_STOP)
+		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 1500);
+
     s_pusher_cmd = cmd;
 }
 
@@ -55,15 +60,11 @@ void servo_stoper_set(ServoCommand cmd)
 {
     if (s_stoper_cmd == cmd) { return; }
 
-    uint32_t compare = cmd;
-
     if (cmd == SERVO_OPEN)
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, s_stoper_open);
 	else if (cmd == SERVO_CLOSE)
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, s_stoper_close);
 
-
-//    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, compare);
     s_stoper_cmd = cmd;
 }
 

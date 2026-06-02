@@ -89,11 +89,16 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
+	for (int i = 0; i < 20; i++) {
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+		for (volatile int j = 0; j < 200000; j++);
+	}
+	NVIC_SystemReset();
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }

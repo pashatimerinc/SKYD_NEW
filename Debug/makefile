@@ -57,6 +57,9 @@ SKYD\ 3.0.2.list \
 OBJCOPY_HEX += \
 SKYD\ 3.0.2.hex \
 
+OBJCOPY_BIN += \
+SKYD\ 3.0.2.bin \
+
 
 # All Target
 all: main-build
@@ -65,8 +68,8 @@ all: main-build
 main-build: SKYD\ 3.0.2.elf secondary-outputs
 
 # Tool invocations
-SKYD\ 3.0.2.elf SKYD\ 3.0.2.map: $(OBJS) $(USER_OBJS) C:\Users\Admin\STM32CubeIDE\workspace_\SKYD\ 3.0.2\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "SKYD 3.0.2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Admin\STM32CubeIDE\workspace_\SKYD 3.0.2\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SKYD 3.0.2.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+SKYD\ 3.0.2.elf SKYD\ 3.0.2.map: $(OBJS) $(USER_OBJS) C:\Users\Admin\STM32CubeIDE\workspace_2.1.1\Skyd_new\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "SKYD 3.0.2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Admin\STM32CubeIDE\workspace_2.1.1\Skyd_new\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SKYD 3.0.2.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -85,12 +88,17 @@ SKYD\ 3.0.2.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
+SKYD\ 3.0.2.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "SKYD 3.0.2.bin"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) SKYD\ 3.0.2.elf SKYD\ 3.0.2.hex SKYD\ 3.0.2.list SKYD\ 3.0.2.map SKYD\\ 3.0.2.elf default.size.stdout
+	-$(RM) SKYD\ 3.0.2.bin SKYD\ 3.0.2.elf SKYD\ 3.0.2.hex SKYD\ 3.0.2.list SKYD\ 3.0.2.map SKYD\\ 3.0.2.elf default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX) $(OBJCOPY_BIN)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'

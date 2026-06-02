@@ -16,11 +16,11 @@
 /* ── Servo command values ─────────────────────────────────────────────────── */
 
 typedef enum {
-    SERVO_STOP  = 1500,    /* pusher: hold in place (no PWM pulse change)  */
-    SERVO_HOME  = 1400,    /* pusher: retract to home / start position      */
-    SERVO_DROP  = 1600,    /* pusher: extend to drop position               */
-    SERVO_OPEN  = 1600,    /* stoper: open (release payload path)           */
-    SERVO_CLOSE = 1300,    /* stoper: close (block payload path)            */
+    SERVO_STOP,    /* pusher: hold in place (no PWM pulse change)  */
+    SERVO_HOME,    /* pusher: retract to home / start position      */
+    SERVO_DROP,    /* pusher: extend to drop position               */
+    SERVO_OPEN,    /* stoper: open (release payload path)           */
+    SERVO_CLOSE    /* stoper: close (block payload path)            */
 } ServoCommand;
 
 /**

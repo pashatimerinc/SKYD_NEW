@@ -44,8 +44,10 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 64K
+  RAM     (xrw) : ORIGIN = 0x20000000, LENGTH = 20K
+  FLASH   (rx)  : ORIGIN = 0x08003000, LENGTH = 60K
+  FW_FLAG   (rx)  : ORIGIN = 0x08012000, LENGTH = 1K
+  FLAGS (rx)  : ORIGIN = 0x08012400, LENGTH = 1K
 }
 
 /* Sections */
@@ -165,6 +167,10 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  .fw_flag :
+  {
+    KEEP(*(.fw_flag))
+  } >FW_FLAG
   /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
   ._user_heap_stack :
   {

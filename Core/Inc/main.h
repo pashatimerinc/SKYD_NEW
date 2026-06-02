@@ -52,27 +52,19 @@ typedef enum {
 	EMERGENCY_STOP,
 	RESTART_SERVOS,
 	START_HEAT,
-	END_HEAT
+	END_HEAT,
+	JUMP_TO_BOOTLOADER = 50,
+	RESTART_CONTROLLER = 51
 } DebugCommands;
 
 typedef enum {
 	SET_TRIM_MIN,
 	SET_TRIM_MAX,
 	SET_HEATER_REVERS,
-	SAVE_DATA
+	SAVE_DATA,
+	READ_DATA
 } DebugSet;
 
-//typedef enum {
-//	BOOT,
-//	CLIP_LOADING,
-//	CHECK_LOAD,
-//	LOADED,
-//	DROP_ONE,
-//	DROP_ALL,
-//	UNLOADED,
-//	DEBUG_STATE,
-//	ERROR_STATE
-//} SystemState;
 
 typedef enum {
 	PUSHER_ROLLBACK,
@@ -90,31 +82,6 @@ typedef enum {
 	RETRY_CHECK
 } Check_loaded_state;
 
-//typedef enum {
-//	NO_INPUT_MODE,
-//	PWM_MODE,
-//	MAVLINK_MODE,
-//	SKYNET_MODE
-//} InputCommandMode;
-
-
-//typedef struct {
-//	ServoCommand currentCommand;
-//} StoperServo;
-//
-//typedef struct {
-//	ServoCommand currentCommand;
-//} PusherServo;
-
-
-//typedef enum {
-//    DS_IDLE = 0,
-//    DS_START_CONV,
-//    DS_WAIT_CONV,
-//    DS_READ,
-//    DS_READY,
-//    DS_ERROR
-//} ds_state_t;
 
 typedef struct
 {
@@ -124,10 +91,6 @@ typedef struct
     uint32_t reverse_heat;
 } savedData_t;
 
-//typedef enum {
-//	ERROR_OK = 0,
-//	ERROR_STUCK
-//} error_device_t;
 
 /* USER CODE END ET */
 
@@ -178,7 +141,8 @@ void Error_Handler(void);
 #define SYS_ID 1
 #define COMP_ID 169
 #define BIT_MASK_REQUEST 69
-#define FLASH_USER_START_ADDR  ((uint32_t)0x0801FC00)  // Last 1KB page
+#define FLASH_USER_START_ADDR  ((uint32_t)0x08012400)  // Last 1KB page
+#define FIRMWARE_VERIFY  ((uint32_t)0x08012000)
 #define FLASH_MAGIC 0xA5A5A5A5
 /* USER CODE END Private defines */
 

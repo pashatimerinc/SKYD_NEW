@@ -47,6 +47,7 @@
   * @{
   */
 
+
 extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
 extern const uint8_t  AHBPrescTable[16U];  /*!< AHB prescalers table values */
 extern const uint8_t  APBPrescTable[8U];   /*!< APB prescalers table values */
