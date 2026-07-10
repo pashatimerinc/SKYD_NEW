@@ -49,12 +49,6 @@ void switches_tick(void)
 
     DEBOUNCE(s_counter_hist, s_state.counter,
              COUNTER_SWITCH_GPIO_Port, COUNTER_SWITCH_Pin);
-
-    DEBOUNCE(s_finish_hist,  s_state.finish,
-             FINISH_SWITCH_GPIO_Port,  FINISH_SWITCH_Pin);
-
-    DEBOUNCE(s_start_hist,   s_state.start,
-             START_SWITCH_GPIO_Port,   START_SWITCH_Pin);
 }
 
 /* ── switches_get ─────────────────────────────────────────────────────────── */

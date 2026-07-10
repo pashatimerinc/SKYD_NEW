@@ -17,6 +17,7 @@
 #include "../Drivers/servo_drv.h"
 #include "../Drivers/switches_drv.h"
 #include "../App/comm.h"
+#include "../App/input_proto.h"
 #include "main.h"   /* HAL_GetTick, GPIO for LED */
 
 #include <stddef.h>
@@ -408,7 +409,7 @@ static void state_error(StateMachineCtx *ctx)
     {
     	ctx->error = ERROR_OK;
     	transition_to(ctx, CLIP_LOADING);
-    	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_GPIO_Port, GPIO_PIN_RESET);
+    	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
     }
 }
 

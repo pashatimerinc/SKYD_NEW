@@ -18,6 +18,7 @@
 #include "heater_drv.h"
 #include "../App/config.h"
 #include "../App/state_machine.h"
+#include "../Drivers/thermo_drv.h"
 #include "tim.h"
 #include "main.h"
 

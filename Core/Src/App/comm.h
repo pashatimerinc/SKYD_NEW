@@ -133,5 +133,7 @@ void update_bitmask_clear(uint8_t bit);
 
 void comm_send_status(uint32_t bitmask);
 void comm_send_skynet(float target, float command);
+void comm_on_msg_up(uint8_t byte);
+void comm_on_msg_down(uint8_t byte);
 
 #endif /* COMM_H */

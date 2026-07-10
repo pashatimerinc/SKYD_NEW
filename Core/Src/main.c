@@ -18,7 +18,6 @@
 #include "adc.h"
 #include "dma.h"
 #include "rtc.h"
-#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -67,7 +66,6 @@ void SystemClock_Config(void);
 int main(void)
 {
 
-	__enable_irq();
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -91,7 +89,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_SPI1_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
@@ -103,8 +100,7 @@ int main(void)
 
   app_init();
   /* USER CODE END 2 */
-  while (1)
-  {
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	  app_update();
@@ -114,8 +110,6 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
-
-
 
 /**
   * @brief System Clock Configuration

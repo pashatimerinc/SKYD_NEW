@@ -25,8 +25,12 @@
 #include "../Drivers/switches_drv.h"
 #include "../Drivers/thermo_drv.h"
 #include "../Drivers/flash_drv.h"
+#include "../Drivers/voltage_drv.h"
 #include "../App/config.h"
+#include "../App/flasher.h"
 #include "../App/state_machine.h"
+#include "../App/input_proto.h"
+
 
 #include "my_dialect_new/my_dialect_new/mavlink.h"
 #include "main.h"    /* SYS_ID, COMP_ID, MAJOR, MINOR, PATCH, version macros */

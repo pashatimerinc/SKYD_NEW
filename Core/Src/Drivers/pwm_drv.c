@@ -19,6 +19,8 @@
 #include "pwm_drv.h"
 #include "../App/comm.h"
 #include "../App/state_machine.h"
+#include "../App/input_proto.h"
+
 #include "../Drivers/uart_drv.h"
 #include "tim.h"     /* htim4 — CubeMX generated */
 #include "usart.h"   /* huart1 */

@@ -116,7 +116,7 @@ void HAL_SYSTICK_Callback(void)
     if (g_tick_counter >= 500)
     {
         g_tick_counter = 0;
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+        HAL_GPIO_TogglePin(LED_BLUE_Pin, LED_BLUE_GPIO_Port);
         comm_heartbeat_tick(&g_sm);
     }
 
@@ -154,4 +154,12 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     thermo_tim_callback(htim);  /* DS18B20 one-wire timing */
+}
+
+/* ── ADC callbacks ────────────────────────────────────────────────────────── */
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	adc_ready = 1;
+
 }

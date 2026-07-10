@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (13.3.rel1)
+# Toolchain: GNU Tools for STM32 (14.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -36,40 +36,40 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := SKYD 3.0.2
+BUILD_ARTIFACT_NAME := SKYD_board_3.0.1_v1.0.10
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-SKYD\ 3.0.2.elf \
+SKYD_board_3.0.1_v1.0.10.elf \
 
 MAP_FILES += \
-SKYD\ 3.0.2.map \
+SKYD_board_3.0.1_v1.0.10.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-SKYD\ 3.0.2.list \
+SKYD_board_3.0.1_v1.0.10.list \
 
 OBJCOPY_HEX += \
-SKYD\ 3.0.2.hex \
+SKYD_board_3.0.1_v1.0.10.hex \
 
 OBJCOPY_BIN += \
-SKYD\ 3.0.2.bin \
+SKYD_board_3.0.1_v1.0.10.bin \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: SKYD\ 3.0.2.elf secondary-outputs
+main-build: SKYD_board_3.0.1_v1.0.10.elf secondary-outputs
 
 # Tool invocations
-SKYD\ 3.0.2.elf SKYD\ 3.0.2.map: $(OBJS) $(USER_OBJS) C:\Users\Admin\STM32CubeIDE\workspace_2.1.1\Skyd_new\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "SKYD 3.0.2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Admin\STM32CubeIDE\workspace_2.1.1\Skyd_new\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SKYD 3.0.2.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+SKYD_board_3.0.1_v1.0.10.elf SKYD_board_3.0.1_v1.0.10.map: $(OBJS) $(USER_OBJS) C:\Users\Admin\STM32CubeIDE\workspace_\SKYD_board_3.0.1_v1.0.10\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "SKYD_board_3.0.1_v1.0.10.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Admin\STM32CubeIDE\workspace_\SKYD_board_3.0.1_v1.0.10\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SKYD_board_3.0.1_v1.0.10.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -78,24 +78,24 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-SKYD\ 3.0.2.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "SKYD 3.0.2.list"
+SKYD_board_3.0.1_v1.0.10.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "SKYD_board_3.0.1_v1.0.10.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-SKYD\ 3.0.2.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "SKYD 3.0.2.hex"
+SKYD_board_3.0.1_v1.0.10.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "SKYD_board_3.0.1_v1.0.10.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-SKYD\ 3.0.2.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "SKYD 3.0.2.bin"
+SKYD_board_3.0.1_v1.0.10.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "SKYD_board_3.0.1_v1.0.10.bin"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) SKYD\ 3.0.2.bin SKYD\ 3.0.2.elf SKYD\ 3.0.2.hex SKYD\ 3.0.2.list SKYD\ 3.0.2.map SKYD\\ 3.0.2.elf default.size.stdout
+	-$(RM) SKYD_board_3.0.1_v1.0.10.bin SKYD_board_3.0.1_v1.0.10.elf SKYD_board_3.0.1_v1.0.10.hex SKYD_board_3.0.1_v1.0.10.list SKYD_board_3.0.1_v1.0.10.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX) $(OBJCOPY_BIN)

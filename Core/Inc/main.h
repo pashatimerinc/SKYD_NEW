@@ -112,22 +112,26 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define START_SWITCH_Pin GPIO_PIN_13
-#define START_SWITCH_GPIO_Port GPIOC
-#define FIXATOR_SWITCH_Pin GPIO_PIN_14
-#define FIXATOR_SWITCH_GPIO_Port GPIOC
-#define COUNTER_SWITCH_Pin GPIO_PIN_15
-#define COUNTER_SWITCH_GPIO_Port GPIOC
-#define FINISH_SWITCH_Pin GPIO_PIN_0
-#define FINISH_SWITCH_GPIO_Port GPIOD
+#define POWER_IN_Pin GPIO_PIN_0
+#define POWER_IN_GPIO_Port GPIOA
+#define START_ADC_Pin GPIO_PIN_1
+#define START_ADC_GPIO_Port GPIOA
 #define DC_SWITCH_Pin GPIO_PIN_4
 #define DC_SWITCH_GPIO_Port GPIOA
-#define LED_GREEN_Pin GPIO_PIN_12
-#define LED_GREEN_GPIO_Port GPIOB
+#define FIXATOR_SWITCH_Pin GPIO_PIN_5
+#define FIXATOR_SWITCH_GPIO_Port GPIOA
+#define COUNTER_SWITCH_Pin GPIO_PIN_6
+#define COUNTER_SWITCH_GPIO_Port GPIOA
+#define FINISH_ADC_Pin GPIO_PIN_7
+#define FINISH_ADC_GPIO_Port GPIOA
+#define LED_RGB_Pin GPIO_PIN_1
+#define LED_RGB_GPIO_Port GPIOB
+#define TERM_Pin GPIO_PIN_10
+#define TERM_GPIO_Port GPIOB
+#define LED_BLUE_Pin GPIO_PIN_12
+#define LED_BLUE_GPIO_Port GPIOB
 #define LED_RED_Pin GPIO_PIN_13
 #define LED_RED_GPIO_Port GPIOB
-#define LED_BLUE_Pin GPIO_PIN_14
-#define LED_BLUE_GPIO_Port GPIOB
 #define SERVO_POWER_Pin GPIO_PIN_15
 #define SERVO_POWER_GPIO_Port GPIOB
 #define SERVO1_Pin GPIO_PIN_8

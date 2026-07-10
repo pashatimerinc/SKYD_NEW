@@ -45,8 +45,6 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -54,20 +52,8 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(DC_SWITCH_GPIO_Port, DC_SWITCH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|LED_GREEN_Pin|LED_RED_Pin|LED_BLUE_Pin
+  HAL_GPIO_WritePin(GPIOB, LED_RGB_Pin|TERM_Pin|LED_BLUE_Pin|LED_RED_Pin
                           |SERVO_POWER_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : START_SWITCH_Pin FIXATOR_SWITCH_Pin COUNTER_SWITCH_Pin */
-  GPIO_InitStruct.Pin = START_SWITCH_Pin|FIXATOR_SWITCH_Pin|COUNTER_SWITCH_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : FINISH_SWITCH_Pin */
-  GPIO_InitStruct.Pin = FINISH_SWITCH_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(FINISH_SWITCH_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DC_SWITCH_Pin */
   GPIO_InitStruct.Pin = DC_SWITCH_Pin;
@@ -76,19 +62,25 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DC_SWITCH_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  /*Configure GPIO pins : FIXATOR_SWITCH_Pin COUNTER_SWITCH_Pin */
+  GPIO_InitStruct.Pin = FIXATOR_SWITCH_Pin|COUNTER_SWITCH_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED_GREEN_Pin LED_RED_Pin LED_BLUE_Pin */
-  GPIO_InitStruct.Pin = LED_GREEN_Pin|LED_RED_Pin|LED_BLUE_Pin;
+  /*Configure GPIO pins : LED_RGB_Pin LED_BLUE_Pin LED_RED_Pin */
+  GPIO_InitStruct.Pin = LED_RGB_Pin|LED_BLUE_Pin|LED_RED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : TERM_Pin */
+  GPIO_InitStruct.Pin = TERM_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TERM_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SERVO_POWER_Pin */
   GPIO_InitStruct.Pin = SERVO_POWER_Pin;
@@ -96,9 +88,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SERVO_POWER_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure peripheral I/O remapping */
-  __HAL_AFIO_REMAP_PD01_ENABLE();
 
 }
 
